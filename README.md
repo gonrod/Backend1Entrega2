@@ -48,15 +48,3 @@ El proyecto contiene dos grupos de rutas:
 4. **DELETE /:cid/product/:pid** - Eliminar un producto de un carrito específico.
    - `DELETE /api/carts/:cid/product/:pid`
 
-## Requisitos para Ejecutar el Proyecto
-
-- **Node.js** (v14 o superior)
-- **npm** (Node Package Manager)
-
-## Instalación
-
-1. **Clonar el Repositorio**
-
-   ```bash
-   git clone <URL_del_repositorio>
-   cd nombre-del-repositorio
