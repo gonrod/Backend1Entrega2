@@ -1,21 +1,70 @@
 const express = require('express');
-const { getProducts, getProductById, addProduct, updateProduct, deleteProduct } = require('../controllers/productsController');
-
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
 
-// Ruta para obtener todos los productos, con opción de limitar los resultados
-router.get('/', getProducts);
+const productsFilePath = path.join(__dirname, '../../data/products.json');
 
-// Ruta para obtener un producto específico por su ID
-router.get('/:pid', getProductById);
+// Obtener todos los productos
+router.get('/', (req, res) => {
+    fs.readFile(productsFilePath, 'utf-8', (err, data) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error al leer el archivo de productos' });
+        }
+        const products = JSON.parse(data);
+        res.json(products);
+    });
+});
 
-// Ruta para agregar un nuevo producto
-router.post('/', addProduct);
+// Obtener un producto por ID
+router.get('/:pid', (req, res) => {
+    fs.readFile(productsFilePath, 'utf-8', (err, data) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error al leer el archivo de productos' });
+        }
+        const products = JSON.parse(data);
+        const product = products.find(p => p.id === parseInt(req.params.pid));
+        if (!product) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+        res.json(product);
+    });
+});
 
-// Ruta para actualizar un producto específico por su ID
-router.put('/:pid', updateProduct);
+// Agregar un nuevo producto
+router.post('/', (req, res) => {
+    const { title, description, code, price, stock, category, thumbnails } = req.body;
 
-// Ruta para eliminar un producto específico por su ID
-router.delete('/:pid', deleteProduct);
+    if (!title || !description || !code || !price || !stock || !category) {
+        return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    }
+
+    fs.readFile(productsFilePath, 'utf-8', (err, data) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error al leer el archivo de productos' });
+        }
+
+        const products = JSON.parse(data);
+        const newProduct = {
+            id: products.length > 0 ? products[products.length - 1].id + 1 : 1,
+            title,
+            description,
+            code,
+            price,
+            stock,
+            category,
+            thumbnails: thumbnails || []
+        };
+
+        products.push(newProduct);
+
+        fs.writeFile(productsFilePath, JSON.stringify(products, null, 2), (err) => {
+            if (err) {
+                return res.status(500).json({ error: 'Error al guardar el producto' });
+            }
+            res.status(201).json(newProduct);
+        });
+    });
+});
 
 module.exports = router;
